@@ -1,26 +1,30 @@
+
 package controllers
 
-
 import (
+    "net/http"
     "github.com/gin-gonic/gin"
-   "~/go/src/github.com/mstiles-grs/pies-by-denton-backend/models"
+    "github.com/mstiles-grs/pies-by-denton-backend/models"
 )
 
-// CreateUserHandler handles requests to create a new user.
-func CreateUserHandler(c *gin.Context) {
-	// Parse request body as JSON
-	var newUser user_model.User
-	if err := json.NewDecoder(c.Request.Body).Decode(&newUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
-		return
-	}
+type UserController struct {}
 
-	// Save new user to database
-	if err := newUser.Save(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save user"})
-		return
-	}
+// createUser is the handler function for the POST /create/user route
+func (u *UserController) CreateUser(c *gin.Context) {
+    // parse the JSON request body into a User struct
+    var newUser models.User
+    err := c.BindJSON(&newUser)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
 
-	// Return success response
-	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
+    // create the user in the database
+    if err := models.CreateUserInDB(newUser); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    // return a success message and the new user object
+    c.JSON(http.StatusCreated, newUser)
 }

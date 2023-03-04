@@ -1,58 +1,33 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
-	"github.com/gin-gonic/gin"
+    "log"
+    "github.com/gin-gonic/gin"
+    "github.com/mstiles-grs/pies-by-denton-backend/controllers"
+	"github.com/mstiles-grs/pies-by-denton-backend/db"
+
 )
 
 func main() {
-	// initialize the gin router
-	router := gin.Default()
 
-	// set up a GET route to test the server
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "Hello, world!"})
-	})
-
-	// set up a POST route to handle creating a new user
-	router.POST("/users", createUser)
-
-	// start the server
-	err := router.Run(":8080")
-	if err != nil {
-		log.Fatal("Error starting server: ", err.Error())
+	if err := db.InitDB(); err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
-}
+	defer db.DB.Close()
 
-// createUser is the handler function for the POST /users route
-func createUser(c *gin.Context) {
-	// parse the JSON request body into a User struct
-	var newUser User
-	err := c.BindJSON(&newUser)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 
-	// create the user in the database
-	err = createUserInDB(newUser)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+    // initialize the gin router
+    router := gin.Default()
 
-	// return a success message and the new user object
-	c.JSON(http.StatusCreated, newUser)
-}
+    // create a new UserController
+    userController := &controllers.UserController{}
 
-// createUserInDB is a function that creates a new user in the database
-func createUserInDB(newUser User) error {
-	// here you would add code to create the user in your PostgreSQL database
-	// for example, using the "database/sql" package
+    // set up a POST route to handle creating a new user
+    router.POST("/create/user", userController.CreateUser)
 
-	// for now, just print out the new user to the console
-	fmt.Println("Created new user:", newUser)
-	return nil
+    // start the server
+    err := router.Run(":8080")
+    if err != nil {
+        log.Fatal("Error starting server: ", err.Error())
+    }
 }
