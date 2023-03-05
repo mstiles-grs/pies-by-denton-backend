@@ -12,27 +12,32 @@ import (
 // DB is the global database connection variable
 var DB *sql.DB
 
-func InitDB() {
-	// get the database url from the environment variable
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		log.Fatal("DATABASE_URL environment variable is not set")
-	}
+func InitDB() error {
+    // get the database url from the environment variable
+    dbURL := os.Getenv("DATABASE_URL")
+    if dbURL == "" {
+        log.Fatal("DATABASE_URL environment variable is not set")
+    }
 
-	// open a connection to the database
-	db, err := sql.Open("postgres", dbURL)
-	if err != nil {
-		log.Fatal("Error opening database connection: ", err.Error())
-	}
+    // append sslmode=disable to the database URL to disable SSL
+    dbURL += "?sslmode=disable"
 
-	// test the connection
-	err = db.Ping()
-	if err != nil {
-		log.Fatal("Error connecting to database: ", err.Error())
-	}
+    // open a connection to the database
+    db, err := sql.Open("postgres", dbURL)
+    if err != nil {
+        return fmt.Errorf("error opening database connection: %v", err)
+    }
 
-	fmt.Println("Successfully connected to database")
+    // test the connection
+    err = db.Ping()
+    if err != nil {
+        return fmt.Errorf("error connecting to database: %v", err)
+    }
 
-	// set the global database connection variable
-	DB = db
+    fmt.Println("Successfully connected to database")
+
+    // set the global database connection variable
+    DB = db
+
+    return nil
 }

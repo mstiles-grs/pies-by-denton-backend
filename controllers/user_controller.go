@@ -1,4 +1,3 @@
-
 package controllers
 
 import (
@@ -7,24 +6,23 @@ import (
     "github.com/mstiles-grs/pies-by-denton-backend/models"
 )
 
-type UserController struct {}
+type UserController struct{}
 
-// createUser is the handler function for the POST /create/user route
+// CreateUser is the handler function for the POST /create/user route
 func (u *UserController) CreateUser(c *gin.Context) {
-    // parse the JSON request body into a User struct
+    // Parse the JSON request body into a User struct
     var newUser models.User
-    err := c.BindJSON(&newUser)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    if err := c.BindJSON(&newUser); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
         return
     }
 
-    // create the user in the database
+    // Create the user in the database
     if err := models.CreateUserInDB(newUser); err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
         return
     }
 
-    // return a success message and the new user object
-    c.JSON(http.StatusCreated, newUser)
+    // Return a success message and the new user object
+    c.JSON(http.StatusCreated, gin.H{"message": "user created", "user": newUser})
 }
