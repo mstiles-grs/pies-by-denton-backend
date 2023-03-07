@@ -15,6 +15,12 @@ type User struct {
     Password  string `json:"password"`
 }
 
+type LoginUser struct {
+    Email    string `json:"email"`
+    Password string `json:"password"`
+}
+
+
 // CreateUserInDB creates a new user record in the database
 func CreateUserInDB(user User) error {
     // get a connection to the database
@@ -36,4 +42,20 @@ func CreateUserInDB(user User) error {
     log.Printf("User created: %s", user.UserName)
     return nil
 }
+
+func Login(email string, password string) (bool, error) {
+    // Get a connection to the database
+    db := database.DB
+
+    // Query the database for a user with the given email and password
+    var exists bool
+    err := db.QueryRow("SELECT EXISTS (SELECT 1 FROM users WHERE email = $1 AND password = $2)", email, password).Scan(&exists)
+
+    if err != nil {
+        return false, err
+    }
+
+    return exists, nil
+}
+
 

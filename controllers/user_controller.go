@@ -26,3 +26,26 @@ func (u *UserController) CreateUser(c *gin.Context) {
     // Return a success message and the new user object
     c.JSON(http.StatusCreated, gin.H{"message": "user created", "user": newUser})
 }
+
+func (u *UserController) LoginUser(c *gin.Context) {
+    // Parse the JSON request body into a LoginUser struct
+    var loginUser models.LoginUser
+    if err := c.BindJSON(&loginUser); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+        return
+    }
+
+    // Call the login function on the user model
+    success, err := models.Login(loginUser.Email, loginUser.Password)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+        return
+    }
+
+    // Return a success or failure response
+    if success {
+        c.JSON(http.StatusOK, gin.H{"message": "200"})
+    } else {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+    }
+}
