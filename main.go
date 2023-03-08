@@ -40,6 +40,8 @@ func main() {
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type"}
 	router.Use(cors.New(config))
 
+
+
 	userController := &controllers.UserController{}
 
 	router.POST("/create/user", func(c *gin.Context) {
@@ -68,7 +70,34 @@ func main() {
 		userController.CreateUser(c)
 	})
 
-	if err := router.Run(":8080"); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+	router.POST("/login/user", func(c *gin.Context) {
+        // Read the request body
+        body, err := ioutil.ReadAll(c.Request.Body)
+        if err != nil {
+            log.Println(err)
+            c.AbortWithStatus(http.StatusBadRequest)
+            return
+        }
+        // Restore the request body for downstream middleware/handlers
+        c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+        // Log the incoming data
+        log.Printf("Request: %s\n", string(body))
+
+        // Parse the request body into a LoginUser struct
+        var loginUser models.LoginUser
+        if err := json.Unmarshal(body, &loginUser); err != nil {
+            log.Println(err)
+            c.AbortWithStatus(http.StatusBadRequest)
+            return
+        }
+
+        // Call the controller function
+        userController.LoginUser(c)
+    })
+
+    if err := router.Run(":8080"); err != nil {
+        log.Fatalf("Failed to start server: %v", err)
+    }
 }
+
