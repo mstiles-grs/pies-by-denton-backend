@@ -36,16 +36,33 @@ func (u *UserController) LoginUser(c *gin.Context) {
     }
 
     // Call the login function on the user model
-    success, err := models.Login(loginUser.Email, loginUser.Password)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
-        return
-    }
+    success, sessionToken, err := models.Login(loginUser.Email, loginUser.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
 
-    // Return a success or failure response
-    if success {
-        c.JSON(http.StatusOK, gin.H{"message": "200"})
-    } else {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
-    }
+	// Return a failure response if login was unsuccessful
+	if !success {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		return
+	}
+
+	// Set the session token in a cookie
+	cookie := &http.Cookie{
+		Name:     "session_token",
+		Value:    sessionToken,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   3600,
+	}
+	http.SetCookie(c.Writer, cookie)
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{"message": "login successful"})
 }
+
+
+
+
+

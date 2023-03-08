@@ -40,6 +40,8 @@ func main() {
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type"}
 	router.Use(cors.New(config))
 
+
+
 	userController := &controllers.UserController{}
 
 	router.POST("/create/user", func(c *gin.Context) {
