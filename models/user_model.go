@@ -57,6 +57,8 @@ func Login(email string, password string) (bool, string, error) {
 	}
 
 	if exists {
+
+
 		// Generate a unique session token
 		sessionToken := uuid.New().String()
 
