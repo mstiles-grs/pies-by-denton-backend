@@ -38,6 +38,8 @@ func (u *UserController) LoginUser(c *gin.Context) {
     // Call the login function on the user model
     success, sessionToken, err := models.Login(loginUser.Email, loginUser.Password)
 	if err != nil {
+
+
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
