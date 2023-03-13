@@ -51,6 +51,7 @@ func Login(email string, password string) (bool, string, error) {
 	var exists bool
 	var userID int
 	err := db.QueryRow("SELECT EXISTS (SELECT 1 FROM users WHERE email = $1 AND password = $2), id FROM users WHERE email = $1 AND password = $2", email, password).Scan(&exists, &userID)
+	log.Printf("User created: %s", email)
 
 	if err != nil {
 		return false, "", err

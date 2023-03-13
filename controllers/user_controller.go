@@ -38,8 +38,6 @@ func (u *UserController) LoginUser(c *gin.Context) {
     // Call the login function on the user model
     success, sessionToken, err := models.Login(loginUser.Email, loginUser.Password)
 	if err != nil {
-
-
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
@@ -51,20 +49,18 @@ func (u *UserController) LoginUser(c *gin.Context) {
 	}
 
 	// Set the session token in a cookie
-	cookie := &http.Cookie{
-		Name:     "session_token",
-		Value:    sessionToken,
-		HttpOnly: true,
-		Path:     "/",
-		MaxAge:   3600,
-	}
-	http.SetCookie(c.Writer, cookie)
+    cookie := &http.Cookie{
+        Name:     "session_token",
+        Value:    sessionToken,
+        HttpOnly: true,
+        Path:     "/",
+        MaxAge:   3600,
+    }
+    http.SetCookie(c.Writer, cookie)
 
-	// Return a success response
-	c.JSON(http.StatusOK, gin.H{"message": "login successful"})
+    // Return a success response with the session token in the body
+    c.JSON(http.StatusOK, gin.H{"message": "login successful", "session_token": sessionToken})
 }
-
-
 
 
 

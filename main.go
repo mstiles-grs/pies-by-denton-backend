@@ -16,56 +16,38 @@ import (
 
 )
 
-func AuthMiddleware() gin.HandlerFunc {
-    return func(c *gin.Context) {
-        // Retrieve the session ID cookie
-        cookie, err := c.Cookie("pga4_session")
-        if err != nil {
-            log.Println("Error retrieving session ID cookie:", err)
-            c.AbortWithStatus(http.StatusUnauthorized)
-            return
-        }
-
-        // Retrieve the user associated with the session ID
-        session, err := database.Store.Get(cookie)
-        if err != nil {
-            log.Println("Error retrieving session:", err)
-            c.AbortWithStatus(http.StatusUnauthorized)
-            return
-        }
-
-        // Attach the user to the context
-        c.Set("user", session.User)
-
-        // Continue processing the request
-        c.Next()
-    }
-}
 
 func main() {
 
-	database.InitDB()
 
-	defer database.DB.Close()
+    // Initialize the database and defer closing the connection
+    database.InitDB()
+    defer database.DB.Close()
 
-	// Open the log file for writing
-	logFile, err := os.OpenFile("request.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer logFile.Close()
+    // Open the log file for writing
+    logFile, err := os.OpenFile("request.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer logFile.Close()
 
-	// Use a multi-writer to write logs to both the console and the log file
-	logWriter := io.MultiWriter(logFile, os.Stdout)
-	log.SetOutput(logWriter)
+    // Use a multi-writer to write logs to both the console and the log file
+    logWriter := io.MultiWriter(logFile, os.Stdout)
+    log.SetOutput(logWriter)
 
-	router := gin.Default()
+    router := gin.Default()
 
-	config := cors.DefaultConfig()
-	config.AllowAllOrigins = true
-	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type"}
-	router.Use(cors.New(config))
+    config := cors.DefaultConfig()
+    config.AllowOrigins = []string{"http://127.0.0.1:5173"}
+    config.AllowCredentials = true
+    config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type"}
+    router.Use(cors.New(config))
 
+    // Use the AuthMiddleware for all routes
+    router.Use(middleware.AuthMiddleware())
+
+
+    //Using a Blank Struct in UserController to handle an format
 
 
 	userController := &controllers.UserController{}
