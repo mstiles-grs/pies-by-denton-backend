@@ -1,43 +1,34 @@
 package database
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
-	"log"
-	"os"
-
-	_ "github.com/lib/pq"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// DB is the global database connection variable
-var DB *sql.DB
+var Client *mongo.Client
+var DbContext context.Context
 
 func InitDB() error {
-    // get the database url from the environment variable
-    dbURL := os.Getenv("DATABASE_URL")
-    if dbURL == "" {
-        log.Fatal("DATABASE_URL environment variable is not set")
-    }
+	connectionString := "mongodb://localhost:27017"
 
-    // append sslmode=disable to the database URL to disable SSL
-    dbURL += "?sslmode=disable"
+	clientOptions := options.Client().ApplyURI(connectionString)
+	client, err := mongo.Connect(context.Background(), clientOptions)
 
-    // open a connection to the database
-    db, err := sql.Open("postgres", dbURL)
-    if err != nil {
-        return fmt.Errorf("error opening database connection: %v", err)
-    }
+	if err != nil {
+		return fmt.Errorf("error connecting to MongoDB: %v", err)
+	}
 
-    // test the connection
-    err = db.Ping()
-    if err != nil {
-        return fmt.Errorf("error connecting to database: %v", err)
-    }
+	err = client.Ping(context.Background(), nil)
+	if err != nil {
+		return fmt.Errorf("error pinging MongoDB: %v", err)
+	}
 
-    fmt.Println("Successfully connected to database")
+	fmt.Println("Connected to MongoDB")
 
-    // set the global database connection variable
-    DB = db
+	Client = client
+	DbContext = context.Background()
 
-    return nil
+	return nil
 }
