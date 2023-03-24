@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mstiles-grs/pies-by-denton-backend/models"
 	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/mstiles-grs/pies-by-denton-backend/models/recipe"
+    "github.com/mstiles-grs/pies-by-denton-backend/models/ingredient"
 )
 
 type UserController struct{}
@@ -62,4 +64,31 @@ func (u *UserController) LoginUser(c *gin.Context, client *mongo.Client, ctx con
 
 	// Return a success response with the session token in the body
 	c.JSON(http.StatusOK, gin.H{"message": "login successful", "session_token": sessionToken})
+}
+
+func (u *UserController) Dashboard(c *gin.Context, client *mongo.Client, ctx context.Context) {
+	
+    userID, err := primitive.ObjectIDFromHex(c.GetString("userID"))
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+        return
+    }
+
+    recipes, err := recipe.GetUserRecipes(client, ctx, userID)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching user recipes"})
+        return
+    }
+
+    ingredients, err := ingredient.GetUserIngredients(client, ctx, userID)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching user ingredients"})
+        return
+    }
+
+    if len(recipes) == 0 && len(ingredients) == 0 {
+        c.JSON(http.StatusOK, gin.H{"message": "Recipes and ingredients are empty"})
+    } else {
+        c.JSON(http.StatusOK, gin.H{"recipes": recipes, "ingredients": ingredients})
+    }
 }

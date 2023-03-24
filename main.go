@@ -32,7 +32,6 @@ func main() {
 
 	// Use the AuthMiddleware for all routes
 	router.Use(middleware.AuthMiddleware())
-	// router.Use(middleware.UpdateSessionMiddleware())
 
 	// Using a Blank Struct in UserController to handle an forat
 	userController := &controllers.UserController{}
@@ -45,6 +44,10 @@ func main() {
 	router.POST("/login/user", func(c *gin.Context) {
 		// Call the controller function with the database connection from the context
 		userController.LoginUser(c, database.Client, database.DbContext)
+	})
+
+	router.GET("/user/dashboard", func(c *gin.Context) {
+		userController.Dashboard(c, database.Client, database.DbContext)
 	})
 
 	if err := router.Run(":8080"); err != nil {
