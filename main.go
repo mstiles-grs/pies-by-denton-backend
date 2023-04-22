@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/mstiles-grs/pies-by-denton-backend/controllers"
+	"github.com/mstiles-grs/pies-by-denton-backend/user"
 	"github.com/mstiles-grs/pies-by-denton-backend/database"
 	"github.com/mstiles-grs/pies-by-denton-backend/middleware"
 	"time"
@@ -32,22 +32,16 @@ func main() {
 
 	// Use the AuthMiddleware for all routes
 	router.Use(middleware.AuthMiddleware())
-
-	// Using a Blank Struct in UserController to handle an forat
-	userController := &controllers.UserController{}
-
-	router.POST("/create/user", func(c *gin.Context) {
-		// Call the controller function with the database connection from the context
-		userController.CreateUser(c, database.Client, database.DbContext)
-	})
-
+	// router.Use(middleware.RefreshSessionMiddleware())
 	router.POST("/login/user", func(c *gin.Context) {
-		// Call the controller function with the database connection from the context
-		userController.LoginUser(c, database.Client, database.DbContext)
+		c.Next()
 	})
+	// router.POST("/create/user", func(c *gin.Context) {
+	// 	users.CreateUser(c, database.Client, database.DbContext)
+	// })
 
-	router.GET("/user/dashboard", func(c *gin.Context) {
-		userController.Dashboard(c, database.Client, database.DbContext)
+	router.GET("/user/dashboard", middleware.SessionMiddleware(), func(c *gin.Context) {
+		user.Dashboard(c)
 	})
 
 	if err := router.Run(":8080"); err != nil {
