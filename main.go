@@ -4,6 +4,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mstiles-grs/pies-by-denton-backend/user"
+	"github.com/mstiles-grs/pies-by-denton-backend/ingredient"
 	"github.com/mstiles-grs/pies-by-denton-backend/database"
 	"github.com/mstiles-grs/pies-by-denton-backend/middleware"
 	"time"
@@ -40,9 +41,17 @@ func main() {
 	// 	users.CreateUser(c, database.Client, database.DbContext)
 	// })
 
+	router.POST("/ingredient/quick-add", middleware.SessionMiddleware(), func(c *gin.Context) {
+		ingredient.QuickAdd(c)
+	})
+
 	router.GET("/user/dashboard", middleware.SessionMiddleware(), func(c *gin.Context) {
 		user.Dashboard(c)
 	})
+
+	// 	router.POST("/create/ingredient", func(c *gin.Context) {
+	// 	users.CreateUser(c, database.Client, database.DbContext)
+	// })
 
 	if err := router.Run(":8080"); err != nil {
 		panic(err)

@@ -6,7 +6,7 @@ import (
 )
 
 
-func Dashboard(c *gin.Context) {
+ func Dashboard(c *gin.Context) {
     c.JSON(200, gin.H{
         "message": "You made it!",
     })
